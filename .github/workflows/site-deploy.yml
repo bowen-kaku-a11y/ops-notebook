@@ -1,0 +1,118 @@
+name: site-deploy
+
+# 网站(notes.aiworkshoplab.com)自动发布:合并到 main 且改动了网站输入时,用 Hugo
+# 构建,再用 wrangler 上传到 Cloudflare Pages 项目 ops-notebook(Direct Upload 项目,
+# 没有 Git 集成,以前都要手动跑 wrangler,漏过一次:10-29 到 11-04 的 7 篇没上线)。
+#
+# 需要 Environment "cloudflare-pages"(Settings -> Environments),Deployment branches 只允许
+# main,里面放两个 Secret:
+#   CLOUDFLARE_API_TOKEN   只给 "Account / Cloudflare Pages: Edit" 权限的 API Token
+#   CLOUDFLARE_ACCOUNT_ID  Cloudflare 账号 ID
+# 放在 Environment 里而不是仓库级:仓库级 Secret 对任何分支上的任何工作流都可见。
+on:
+  push:
+    branches: [main]
+    paths:
+      - "content/**"
+      - "themes/**"
+      - "static/**"
+      - "layouts/**"
+      - "assets/**"
+      - "data/**"
+      - "i18n/**"
+      - "archetypes/**"
+      - "hugo.toml"
+      - ".github/workflows/site-deploy.yml"
+  # 每天跑一次:日期写成"今天"或将来的文章,构建时还算未来、会被跳过,到日子后由这次补发
+  schedule:
+    - cron: "17 9 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 排队,不取消:取消正在上传的那次、而新的那次又失败,就什么都没发出去
+concurrency:
+  group: site-deploy
+  cancel-in-progress: false
+
+env:
+  # 和线上一致(页面 <meta name="generator"> 里是 Hugo 0.166.0)
+  HUGO_VERSION: "0.166.0"
+  PAGES_PROJECT: ops-notebook
+
+jobs:
+  deploy:
+    # 只发布 main:手动触发时选了别的分支也不会把未合并的内容推到生产站点
+    if: github.ref == 'refs/heads/main'
+    # Secret 只在这个 Environment 里,且它只允许 main 分支部署
+    environment: cloudflare-pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check secrets
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          [ -n "$CF_TOKEN" ] && [ -n "$CF_ACCOUNT" ] || {
+            echo "::error::Environment cloudflare-pages 里缺 CLOUDFLARE_API_TOKEN 或 CLOUDFLARE_ACCOUNT_ID"; exit 1; }
+
+      - name: Install Hugo ${{ env.HUGO_VERSION }} (extended)
+        run: |
+          base="https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}"
+          deb="hugo_extended_${HUGO_VERSION}_linux-amd64.deb"
+          curl -fsSL -o "/tmp/$deb" "$base/$deb"
+          curl -fsSL -o /tmp/checksums.txt "$base/hugo_${HUGO_VERSION}_checksums.txt"
+          (cd /tmp && grep " $deb\$" checksums.txt | sha256sum -c -)
+          sudo dpkg -i "/tmp/$deb"
+          hugo version
+
+      - name: Build
+        run: hugo --minify --cleanDestinationDir
+
+      - name: Sanity check
+        # 逐篇核对:每篇该发布的文章(不是草稿、日期不在将来)都要在 sitemap 里,
+        # 少了就别发布。未来日期的只提示,由每日定时任务到日子再发。
+        run: |
+          python3 - <<'PY'
+          import datetime, glob, os, re, sys
+          sitemap = open("public/sitemap.xml").read()
+          now = datetime.datetime.now(datetime.timezone.utc)
+          missing, future = [], []
+          for p in sorted(glob.glob("content/posts/*.md")):
+              if os.path.basename(p).startswith("_"):
+                  continue
+              m = re.match(r"---\n(.*?)\n---\n", open(p, encoding="utf-8").read(), re.S)
+              fm = m.group(1) if m else ""
+              if re.search(r"^draft:\s*true\s*$", fm, re.M):
+                  continue
+              slug = (re.search(r"^slug:\s*\"?([^\"\n]+)", fm, re.M) or [None, os.path.basename(p)[:-3]])[1].strip()
+              d = re.search(r"^date:\s*\"?([0-9T:+\-]+)", fm, re.M)
+              if d:
+                  ds = d.group(1)
+                  dt = datetime.datetime.fromisoformat(ds if "T" in ds else ds + "T00:00:00+00:00")
+                  if dt.tzinfo is None:
+                      dt = dt.replace(tzinfo=datetime.timezone.utc)
+                  if dt > now:
+                      future.append(slug); continue
+              if f"/posts/{slug}/" not in sitemap:
+                  missing.append(slug)
+          for f in future:
+              print(f"::notice::未来日期,这次不发布,到日子由定时任务发布:{f}")
+          if missing:
+              print("::error::这些文章该发布但不在 sitemap 里:" + ", ".join(missing))
+              sys.exit(1)
+          print("sanity ok")
+          PY
+
+      - name: Deploy to Cloudflare Pages
+        # 直接用钉死版本的 wrangler,不经第三方 action(token 只交给 Cloudflare 自己的 CLI)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx --yes wrangler@4.86.0 pages deploy public \
+            --project-name="$PAGES_PROJECT" --branch=main \
+            --commit-hash="$GITHUB_SHA" --commit-dirty=true

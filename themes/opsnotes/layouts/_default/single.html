@@ -1,0 +1,13 @@
+{{ define "main" }}
+<article>
+  <h1>{{ .Title }}</h1>
+  <p class="meta">Published {{ .Date.Format "January 2, 2006" }}{{ if ne (.Date.Format "2006-01-02") (.Lastmod.Format "2006-01-02") }} · Updated {{ .Lastmod.Format "January 2, 2006" }}{{ end }} · {{ .ReadingTime }} min read</p>
+  {{ with .Description }}<p><em>{{ . }}</em></p>{{ end }}
+  {{ .Content }}
+  {{ partial "ad-inarticle.html" . }}
+  <div class="author-box">
+    <strong>About the author</strong>
+    <p>The Ops Notebook is written by an operations engineer running live Kubernetes data infrastructure (Redpanda, Elasticsearch). Every article is based on real incidents, real cost numbers, and real fixes — not rewritten documentation.</p>
+  </div>
+</article>
+{{ end }}

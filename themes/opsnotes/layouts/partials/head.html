@@ -1,0 +1,62 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ if .IsHome }}{{ .Site.Title }} — {{ .Site.Params.description }}{{ else }}{{ .Title }} | {{ .Site.Title }}{{ end }}</title>
+<meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}">
+<link rel="canonical" href="{{ .Permalink }}">
+<meta property="og:title" content="{{ .Title }}">
+<meta property="og:description" content="{{ with .Description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}">
+<meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}">
+<meta property="og:url" content="{{ .Permalink }}">
+{{ if .IsPage }}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": {{ .Title | jsonify }},
+  "description": {{ with .Description }}{{ . | jsonify }}{{ else }}{{ .Site.Params.description | jsonify }}{{ end }},
+  "author": { "@type": "Organization", "name": {{ .Site.Params.author | jsonify }} },
+  "datePublished": {{ .Date.Format "2006-01-02" | jsonify }},
+  "dateModified": {{ .Lastmod.Format "2006-01-02" | jsonify }}
+}
+</script>
+{{ end }}
+{{ with .Site.Params.adsense_client }}
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ . }}" crossorigin="anonymous"></script>
+{{ end }}
+<style>
+:root { --fg: #1a1a1a; --muted: #5c5c5c; --accent: #0b5fff; --bg: #ffffff; --card: #f6f7f9; --border: #e5e7eb; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--fg); background: var(--bg); line-height: 1.7; }
+.container { max-width: 760px; margin: 0 auto; padding: 0 20px; }
+header.site { border-bottom: 1px solid var(--border); }
+header.site .container { display: flex; align-items: center; justify-content: space-between; padding-top: 14px; padding-bottom: 14px; }
+.brand { font-weight: 800; font-size: 1.25rem; text-decoration: none; color: var(--fg); }
+.brand span { color: var(--accent); }
+nav a { margin-left: 18px; text-decoration: none; color: var(--muted); font-size: 0.95rem; }
+nav a:hover { color: var(--accent); }
+.hero { padding: 48px 0 8px; }
+.hero h1 { font-size: 2rem; margin: 0 0 8px; }
+.hero p { color: var(--muted); margin: 0; }
+.post-list { list-style: none; padding: 0; margin: 32px 0; }
+.post-list li { padding: 18px 0; border-bottom: 1px solid var(--border); }
+.post-list a.title { font-size: 1.15rem; font-weight: 700; text-decoration: none; color: var(--fg); }
+.post-list a.title:hover { color: var(--accent); }
+.post-list .meta, .meta { color: var(--muted); font-size: 0.85rem; }
+.post-list p { margin: 6px 0 0; color: var(--muted); font-size: 0.95rem; }
+article h1 { font-size: 1.9rem; line-height: 1.3; }
+article h2 { margin-top: 2em; font-size: 1.35rem; }
+article h3 { font-size: 1.1rem; }
+article code { background: var(--card); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+article pre { background: #0f172a; color: #e2e8f0; padding: 16px; border-radius: 8px; overflow-x: auto; }
+article pre code { background: none; padding: 0; }
+article blockquote { border-left: 3px solid var(--accent); margin: 1.5em 0; padding: 4px 16px; color: var(--muted); background: var(--card); }
+article table { border-collapse: collapse; width: 100%; margin: 1.5em 0; font-size: 0.95rem; }
+article th, article td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
+article th { background: var(--card); }
+.author-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-top: 48px; font-size: 0.95rem; }
+footer.site { border-top: 1px solid var(--border); margin-top: 64px; padding: 24px 0; color: var(--muted); font-size: 0.85rem; }
+footer.site a { color: var(--muted); margin-right: 16px; text-decoration: none; }
+footer.site a:hover { color: var(--accent); }
+.ad-slot { margin: 32px 0; text-align: center; }
+@media (max-width: 600px) { .hero h1 { font-size: 1.5rem; } article h1 { font-size: 1.5rem; } }
+</style>

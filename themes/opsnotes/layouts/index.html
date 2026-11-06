@@ -1,0 +1,15 @@
+{{ define "main" }}
+<div class="hero">
+  <h1>DevOps &amp; cloud-native field notes from real-world operations.</h1>
+  <p>Kubernetes, Redpanda, Elasticsearch, and the unglamorous work of keeping stateful workloads alive — with real numbers.</p>
+</div>
+<ul class="post-list">
+  {{ range first 10 (where .Site.RegularPages "Section" "posts").ByDate.Reverse }}
+  <li>
+    <a class="title" href="{{ .RelPermalink }}">{{ .Title }}</a>
+    <div class="meta">{{ .Date.Format "January 2, 2006" }} · {{ .ReadingTime }} min read</div>
+    {{ with .Description }}<p>{{ . }}</p>{{ end }}
+  </li>
+  {{ end }}
+</ul>
+{{ end }}

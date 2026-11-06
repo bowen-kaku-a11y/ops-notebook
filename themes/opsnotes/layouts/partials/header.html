@@ -1,0 +1,10 @@
+<header class="site">
+  <div class="container">
+    <a class="brand" href="{{ .Site.BaseURL }}">The Ops <span>Notebook</span></a>
+    <nav>
+      {{ range .Site.Menus.main }}
+      <a href="{{ .URL }}">{{ .Name }}</a>
+      {{ end }}
+    </nav>
+  </div>
+</header>

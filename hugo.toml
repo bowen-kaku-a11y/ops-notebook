@@ -1,0 +1,33 @@
+baseURL = "https://notes.aiworkshoplab.com/"
+title = "The Ops Notebook"
+theme = "opsnotes"
+languageCode = "en-us"
+
+[params]
+  description = "DevOps and cloud-native field notes from real-world operations: Kubernetes, Redpanda, Elasticsearch, and storage cost optimization."
+  author = "The Ops Notebook"
+  # Fill in after AdSense approval to enable ads:
+  # adsense_client = "ca-pub-XXXXXXXXXXXXXXXX"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+
+[menu]
+  [[menu.main]]
+    name = "Home"
+    url = "/"
+    weight = 1
+  [[menu.main]]
+    name = "Articles"
+    url = "/posts/"
+    weight = 2
+  [[menu.main]]
+    name = "About"
+    url = "/about/"
+    weight = 3
+  [[menu.main]]
+    name = "Contact"
+    url = "/contact/"
+    weight = 4
