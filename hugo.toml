@@ -1,7 +1,10 @@
 baseURL = "https://notes.aiworkshoplab.com/"
 title = "The Ops Notebook"
 theme = "opsnotes"
-languageCode = "en-us"
+locale = "en-us"
+# No post uses tags or categories, so the taxonomy pages would only be
+# empty /tags/ and /categories/ pages in the sitemap (thin content).
+disableKinds = ["taxonomy", "term"]
 
 [params]
   description = "DevOps and cloud-native field notes from real-world operations: Kubernetes, Redpanda, Elasticsearch, and storage cost optimization."
