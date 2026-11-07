@@ -1,7 +1,7 @@
 baseURL = "https://notes.aiworkshoplab.com/"
 title = "The Ops Notebook"
 theme = "opsnotes"
-languageCode = "en-us"
+locale = "en-us"
 # No post uses tags or categories, so the taxonomy pages would only be
 # empty /tags/ and /categories/ pages in the sitemap (thin content).
 disableKinds = ["taxonomy", "term"]
@@ -34,3 +34,10 @@ disableKinds = ["taxonomy", "term"]
     name = "Contact"
     url = "/contact/"
     weight = 4
+
+# .Lastmod (dateModified, article:modified_time, sitemap lastmod): a
+# post's front-matter `lastmod` if set, else its publish date. Not git:
+# this repo was imported without history on 2026-11-06, so every file's
+# last commit would claim that date.
+[frontmatter]
+  lastmod = ["lastmod", "date"]

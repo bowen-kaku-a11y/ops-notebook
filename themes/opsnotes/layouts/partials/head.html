@@ -1,17 +1,23 @@
+{{- $desc := .Description | default .Site.Params.description -}}
+{{- $isPost := and .IsPage (eq .Section "posts") -}}
+{{- $loc := .Site.Language.Locale -}}
+{{- $parts := split $loc "-" -}}
+{{- $ogLocale := cond (gt (len $parts) 1) (printf "%s_%s" (index $parts 0) (upper (index $parts 1))) $loc -}}
+{{- $home := .Site.Home.Permalink -}}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ if .IsHome }}{{ .Site.Title }} — {{ .Site.Params.description }}{{ else }}{{ .Title }} | {{ .Site.Title }}{{ end }}</title>
-<meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}">
+<meta name="description" content="{{ $desc }}">
 <link rel="canonical" href="{{ .Permalink }}">
 <meta property="og:title" content="{{ .Title }}">
-<meta property="og:description" content="{{ with .Description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}">
-<meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}">
+<meta property="og:description" content="{{ $desc }}">
+<meta property="og:type" content="{{ if $isPost }}article{{ else }}website{{ end }}">
 <meta property="og:url" content="{{ .Permalink }}">
 <meta property="og:site_name" content="{{ .Site.Title }}">
-<meta property="og:locale" content="en_US">
+<meta property="og:locale" content="{{ $ogLocale }}">
 <meta name="twitter:card" content="summary">
-{{ with .OutputFormats.Get "rss" }}<link rel="alternate" type="application/rss+xml" title="{{ $.Site.Title }}" href="{{ .Permalink }}">{{ end }}
-{{ if .IsPage }}
+{{ with .Site.Home.OutputFormats.Get "rss" }}<link rel="alternate" type="application/rss+xml" title="{{ $.Site.Title }}" href="{{ .Permalink }}">{{ end }}
+{{ if $isPost }}
 <meta property="article:published_time" content="{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}">
 <meta property="article:modified_time" content="{{ .Lastmod.Format "2006-01-02T15:04:05Z07:00" }}">
 <script type="application/ld+json">
@@ -19,14 +25,14 @@
   "@context": "https://schema.org",
   "@type": "BlogPosting",
   "headline": {{ .Title }},
-  "description": {{ with .Description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }},
+  "description": {{ $desc }},
   "url": {{ .Permalink }},
   "mainEntityOfPage": {{ .Permalink }},
-  "inLanguage": "en",
-  "author": { "@type": "Organization", "name": {{ .Site.Params.author }}, "url": {{ .Site.BaseURL }} },
-  "publisher": { "@type": "Organization", "name": {{ .Site.Title }}, "url": {{ .Site.BaseURL }} },
-  "datePublished": {{ .Date.Format "2006-01-02" }},
-  "dateModified": {{ .Lastmod.Format "2006-01-02" }}
+  "inLanguage": {{ $loc }},
+  "author": { "@id": {{ printf "%s#org" $home }} },
+  "publisher": { "@type": "Organization", "@id": {{ printf "%s#org" $home }}, "name": {{ .Site.Title }}, "url": {{ $home }} },
+  "datePublished": {{ .Date.Format "2006-01-02T15:04:05Z07:00" }},
+  "dateModified": {{ .Lastmod.Format "2006-01-02T15:04:05Z07:00" }}
 }
 </script>
 {{ end }}
@@ -36,9 +42,10 @@
   "@context": "https://schema.org",
   "@type": "WebSite",
   "name": {{ .Site.Title }},
-  "url": {{ .Site.BaseURL }},
+  "url": {{ $home }},
   "description": {{ .Site.Params.description }},
-  "inLanguage": "en"
+  "inLanguage": {{ $loc }},
+  "publisher": { "@type": "Organization", "@id": {{ printf "%s#org" $home }}, "name": {{ .Site.Title }}, "url": {{ $home }} }
 }
 </script>
 {{ end }}

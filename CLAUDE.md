@@ -3,7 +3,7 @@
 Source of the public Hugo site notes.aiworkshoplab.com ("The Ops Notebook"). **This repo is
 public**: everything committed here is published, history included.
 
-- Posts: `content/posts/*.md`, YAML front matter `title`, `date`, `description`, then an H1
+- Posts: `content/posts/*.md`, YAML front matter `title`, `date`, `description`, then an H1 When a post gets a substantive update, add `lastmod: YYYY-MM-DD` to its front matter (it feeds dateModified and the sitemap; git dates are not used).
   repeating the title. Match the language of the file you edit (posts are English).
 - **Sanitize everything** before committing: no real hostnames or internal domains (use
   `*.example.com`), no real IPs (use 203.0.113.0/24, 192.0.2.0/24, 198.51.100.0/24), no cloud
