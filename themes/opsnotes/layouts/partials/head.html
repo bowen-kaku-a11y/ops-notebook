@@ -10,15 +10,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ if .IsHome }}{{ .Site.Title }} — {{ .Site.Params.description }}{{ else }}{{ .Title }} | {{ .Site.Title }}{{ end }}</title>
 <meta name="description" content="{{ $desc }}">
-<link rel="canonical" href="{{ .Permalink }}">
+{{ if eq .Kind "404" }}<meta name="robots" content="noindex">{{ else }}<link rel="canonical" href="{{ .Permalink }}">{{ end }}
 <meta property="og:title" content="{{ .Title }}">
 <meta property="og:description" content="{{ $desc }}">
 <meta property="og:type" content="{{ if $isPost }}article{{ else }}website{{ end }}">
-<meta property="og:url" content="{{ .Permalink }}">
+{{ if ne .Kind "404" }}<meta property="og:url" content="{{ .Permalink }}">{{ end }}
 <meta property="og:site_name" content="{{ .Site.Title }}">
 <meta property="og:locale" content="{{ $ogLocale }}">
 <meta name="twitter:card" content="summary">
-{{ with (.Site.GetPage "/posts").OutputFormats.Get "rss" }}<link rel="alternate" type="application/rss+xml" title="{{ $.Site.Title }}" href="{{ .Permalink }}">{{ end }}
+{{ with .Site.GetPage "/posts" }}{{ with .OutputFormats.Get "rss" }}<link rel="alternate" type="application/rss+xml" title="{{ $.Site.Title }}" href="{{ .Permalink }}">{{ end }}{{ end }}
 {{ if $isPost }}
 {{ if not .Date.IsZero }}
 <meta property="article:published_time" content="{{ .Date.Format $dateFmt }}">
