@@ -6,7 +6,8 @@ public**: everything committed here is published, history included.
 - Posts: `content/posts/*.md`, YAML front matter `title`, `date`, `description`, then an H1
   repeating the title. Match the language of the file you edit (posts are English).
 - When any content file (post or page such as privacy/terms) gets a substantive update,
-  add `lastmod: YYYY-MM-DD` to its front matter. It feeds dateModified and the sitemap;
+  add `lastmod: YYYY-MM-DD` to its front matter. It feeds the sitemap and, for posts,
+  dateModified / article:modified_time;
   without it the publish date is used (git dates are not, the repo history starts at the
   2026-11-06 import).
 - **Sanitize everything** before committing: no real hostnames or internal domains (use
