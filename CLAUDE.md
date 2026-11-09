@@ -4,7 +4,11 @@ Source of the public Hugo site notes.aiworkshoplab.com ("The Ops Notebook"). **T
 public**: everything committed here is published, history included.
 
 - Posts: `content/posts/*.md`, YAML front matter `title`, `date`, `description`, then an H1
-  repeating the title. Match the language of the file you edit (posts are English).
+  repeating the title (the theme drops that leading H1 at render, since `single.html` already
+  prints the title as the page's only H1). Each post gets a share image built from
+  `assets/og/` (title drawn on `base.png`, font size picked from title length and longest
+  word in `partials/og-image.html`). Check the image after adding a very long title or one
+  with a long unbroken identifier. Match the language of the file you edit (posts are English).
 - When any content file (post or page such as privacy/terms) gets a substantive update,
   add `lastmod: YYYY-MM-DD` to its front matter. It feeds the sitemap and, for posts,
   dateModified / article:modified_time;

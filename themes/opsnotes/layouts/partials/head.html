@@ -17,7 +17,15 @@
 {{ if ne .Kind "404" }}<meta property="og:url" content="{{ .Permalink }}">{{ end }}
 <meta property="og:site_name" content="{{ .Site.Title }}">
 <meta property="og:locale" content="{{ $ogLocale }}">
-<meta name="twitter:card" content="summary">
+{{- $og := partial "og-image.html" . -}}
+{{- $ogURL := printf "%sog-default.png" $home -}}
+{{- with $og }}{{ $ogURL = .Permalink }}{{ end -}}
+<meta property="og:image" content="{{ $ogURL }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="{{ if $og }}{{ .Title }} | {{ .Site.Title }}{{ else }}{{ .Site.Title }}: field notes from real operations work{{ end }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{{ $ogURL }}">
 {{ with .Site.GetPage "/posts" }}{{ with .OutputFormats.Get "rss" }}<link rel="alternate" type="application/rss+xml" title="{{ $.Site.Title }}" href="{{ .Permalink }}">{{ end }}{{ end }}
 {{ if $isPost }}
 {{ if not .Date.IsZero }}
@@ -86,6 +94,10 @@ article blockquote { border-left: 3px solid var(--accent); margin: 1.5em 0; padd
 article table { border-collapse: collapse; width: 100%; margin: 1.5em 0; font-size: 0.95rem; }
 article th, article td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
 article th { background: var(--card); }
+.more-posts { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); }
+.more-posts h2 { font-size: 1.1rem; margin: 1.2em 0 0.4em; }
+.more-posts ul { padding-left: 1.2em; margin: 0; }
+.more-posts .pn { margin: 4px 0; font-size: 0.95rem; }
 .author-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-top: 48px; font-size: 0.95rem; }
 footer.site { border-top: 1px solid var(--border); margin-top: 64px; padding: 24px 0; color: var(--muted); font-size: 0.85rem; }
 footer.site a { color: var(--muted); margin-right: 16px; text-decoration: none; }
