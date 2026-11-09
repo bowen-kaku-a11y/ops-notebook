@@ -3,11 +3,31 @@
   <h1>{{ .Title }}</h1>
   <p class="meta">Published {{ .Date.Format "January 2, 2006" }}{{ if ne (.Date.Format "2006-01-02") (.Lastmod.Format "2006-01-02") }} · Updated {{ .Lastmod.Format "January 2, 2006" }}{{ end }} · {{ .ReadingTime }} min read</p>
   {{ with .Description }}<p><em>{{ . }}</em></p>{{ end }}
-  {{ .Content }}
+  {{- /* Posts start with an H1 repeating the title (see CLAUDE.md); the title
+         is already the page's H1 above, so drop that leading duplicate. */}}
+  {{ .Content | replaceRE `^\s*<h1[^>]*>.*?</h1>` "" | safeHTML }}
   {{ partial "ad-inarticle.html" . }}
   <div class="author-box">
     <strong>About the author</strong>
     <p>The Ops Notebook is written by an operations engineer running live Kubernetes data infrastructure (Redpanda, Elasticsearch). Every article is based on real incidents, real cost numbers, and real fixes — not rewritten documentation.</p>
   </div>
+  {{ if eq .Section "posts" }}
+  <nav class="more-posts" aria-label="More articles">
+    {{ with .PrevInSection }}<p class="pn">Previous: <a href="{{ .RelPermalink }}">{{ .Title }}</a></p>{{ end }}
+    {{ with .NextInSection }}<p class="pn">Next: <a href="{{ .RelPermalink }}">{{ .Title }}</a></p>{{ end }}
+    {{- $exclude := slice .Permalink -}}
+    {{- with .PrevInSection }}{{ $exclude = $exclude | append .Permalink }}{{ end -}}
+    {{- with .NextInSection }}{{ $exclude = $exclude | append .Permalink }}{{ end -}}
+    {{- $pool := where (where .Site.RegularPages "Section" "posts") "Permalink" "not in" $exclude -}}
+    {{- $related := first 3 ($pool.Related .) -}}
+    {{- if lt (len $related) 3 }}{{ $related = first 3 $pool.ByDate.Reverse }}{{ end -}}
+    {{ with $related }}
+    <h2>More from The Ops Notebook</h2>
+    <ul>
+      {{ range . }}<li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>{{ end }}
+    </ul>
+    {{ end }}
+  </nav>
+  {{ end }}
 </article>
 {{ end }}
