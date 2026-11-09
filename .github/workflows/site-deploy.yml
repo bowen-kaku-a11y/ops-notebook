@@ -48,6 +48,8 @@ jobs:
     # Secret 只在这个 Environment 里,且它只允许 main 分支部署
     environment: cloudflare-pages
     runs-on: ubuntu-latest
+    # A normal deploy takes under a minute; never let a stalled step run for hours.
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -63,8 +65,12 @@ jobs:
         run: |
           base="https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}"
           deb="hugo_extended_${HUGO_VERSION}_linux-amd64.deb"
-          curl -fsSL --retry 5 --retry-delay 10 --retry-all-errors -o "/tmp/$deb" "$base/$deb"
-          curl -fsSL --retry 5 --retry-delay 10 --retry-all-errors -o /tmp/checksums.txt "$base/hugo_${HUGO_VERSION}_checksums.txt"
+          # GitHub release downloads sometimes 504; --retry covers 408/429/5xx
+          # with exponential backoff, the timeouts turn a stalled transfer into
+          # a retryable error.
+          curl_opts=(-fsSL --connect-timeout 15 --max-time 300 --retry 6 --retry-max-time 300)
+          curl "${curl_opts[@]}" -o "/tmp/$deb" "$base/$deb"
+          curl "${curl_opts[@]}" -o /tmp/checksums.txt "$base/hugo_${HUGO_VERSION}_checksums.txt"
           (cd /tmp && grep " $deb\$" checksums.txt | sha256sum -c -)
           sudo dpkg -i "/tmp/$deb"
           hugo version
