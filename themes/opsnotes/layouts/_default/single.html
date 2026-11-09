@@ -11,7 +11,7 @@
     <strong>About the author</strong>
     <p>The Ops Notebook is written by an operations engineer running live Kubernetes data infrastructure (Redpanda, Elasticsearch). Every article is based on real incidents, real cost numbers, and real fixes — not rewritten documentation.</p>
   </div>
-  {{ if eq .Section "posts" }}
+  {{ if and (eq .Section "posts") (or .PrevInSection .NextInSection (gt (len (where .Site.RegularPages "Section" "posts")) 1)) }}
   <nav class="more-posts" aria-label="More articles">
     {{ with .PrevInSection }}<p class="pn">Previous: <a href="{{ .RelPermalink }}">{{ .Title }}</a></p>{{ end }}
     {{ with .NextInSection }}<p class="pn">Next: <a href="{{ .RelPermalink }}">{{ .Title }}</a></p>{{ end }}
@@ -20,7 +20,8 @@
     {{- with .NextInSection }}{{ $exclude = $exclude | append .Permalink }}{{ end -}}
     {{- $pool := where (where .Site.RegularPages "Section" "posts") "Permalink" "not in" $exclude -}}
     {{- $related := first 3 ($pool.Related .) -}}
-    {{- if lt (len $related) 3 }}{{ $related = first 3 $pool.ByDate.Reverse }}{{ end -}}
+    {{- /* fewer than 3 related: top up with the newest posts not already listed */ -}}
+    {{- range $pool.ByDate.Reverse }}{{ if and (lt (len $related) 3) (not (in $related .)) }}{{ $related = $related | append . }}{{ end }}{{ end -}}
     {{ with $related }}
     <h2>More from The Ops Notebook</h2>
     <ul>

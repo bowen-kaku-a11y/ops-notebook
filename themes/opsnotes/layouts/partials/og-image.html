@@ -6,7 +6,14 @@
   {{- $base := resources.Get "og/base.png" -}}
   {{- $font := resources.Get "og/DejaVuSans-Bold.ttf" -}}
   {{- $title := .Title -}}
-  {{- $size := cond (gt (len $title) 70) 50 60 -}}
+  {{- /* Size from the title length and its longest word: a long identifier
+         (metric names, flags) can't wrap, so it needs a smaller size to fit
+         1040px; long titles need it to stay within the canvas height. */ -}}
+  {{- $longest := 0 -}}
+  {{- range split $title " " }}{{ if gt (len .) $longest }}{{ $longest = len . }}{{ end }}{{ end -}}
+  {{- $size := 60 -}}
+  {{- if or (gt (len $title) 70) (gt $longest 22) }}{{ $size = 50 }}{{ end -}}
+  {{- if or (gt (len $title) 110) (gt $longest 28) }}{{ $size = 40 }}{{ end -}}
   {{- /* images.Text wraps at the image's right edge, so draw the title on a
          1040px-wide transparent canvas and overlay it at x=80: 80px margins. */ -}}
   {{- $canvas := resources.Get "og/text-canvas.png" -}}
